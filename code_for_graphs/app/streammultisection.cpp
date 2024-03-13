@@ -36,9 +36,18 @@
 #include "partition/onepass_partitioning/fennel_approx_sqrt.h"
 #include "partition/onepass_partitioning/ldg.h"
 
+#include <sys/resource.h>
+
 #define MIN(A,B) (((A)<(B))?(A):(B))
 #define MAX(A,B) (((A)>(B))?(A):(B))
 
+inline long get_max_rss() {
+    rusage usage;
+    if (getrusage(RUSAGE_SELF, &usage) == 0) {
+        return usage.ru_maxrss;
+    }
+    return -1;
+}
 
 void initialize_onepass_partitioner(PartitionConfig & config, vertex_partitioning*& onepass_partitioner);
 
@@ -178,6 +187,7 @@ int main(int argn, char **argv) {
 		std::cout << "cut\t\t" << total_edge_cut << std::endl;
 		std::cout << "finalobjective  " << total_edge_cut << std::endl;
 		std::cout << "balance \t" << qm.balance_full_stream(*config.stream_blocks_weight) << std::endl;
+        std::cout << "MaxRSS \t\t" << get_max_rss() << std::endl;
 	}
 
 	// write the partition to the disc 
